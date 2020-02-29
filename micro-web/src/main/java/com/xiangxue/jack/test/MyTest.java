@@ -7,19 +7,60 @@ import com.netflix.client.http.HttpResponse;
 import com.netflix.config.ConfigurationManager;
 import com.netflix.niws.client.http.RestClient;
 import com.xiangxue.jack.MicroWebApplication;
+import com.xiangxue.jack.service.UserService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.CountDownLatch;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = MicroWebApplication.class)
 @WebAppConfiguration
 public class MyTest {
+
+    private Logger logger = LoggerFactory.getLogger(getClass());
+
+    private Integer count = 120;
+
+    private CountDownLatch cdl = new CountDownLatch(count);
+
+    @Autowired
+    UserService userService;
+
+    @Test
+    public void hystrixTest() {
+
+        for (Integer i = 0; i < count; i++) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        cdl.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    logger.info(Thread.currentThread().getName() + "==>" + userService.queryContents());
+                }
+            }).start();
+            //-1
+            cdl.countDown();
+        }
+
+        try {
+            Thread.currentThread().join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
     /*
     * ribbon作为调用客户端，可以单独使用
