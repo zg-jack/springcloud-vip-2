@@ -3,15 +3,21 @@ package com.xiangxue.jack.service;
 import com.alibaba.fastjson.JSONObject;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
+import com.netflix.hystrix.contrib.javanica.annotation.ObservableExecutionMode;
+import com.netflix.hystrix.contrib.javanica.command.AsyncResult;
 import com.xiangxue.jack.bean.ConsultContent;
+import com.xiangxue.jack.bean.ZgGoods;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import rx.Observable;
+import rx.Subscriber;
 
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
@@ -63,21 +69,42 @@ public class UserServiceImpl implements UserService {
             commandKey = "queryContents",
             groupKey = "querygroup-one",
             commandProperties = {
-                    @HystrixProperty(name = "execution.isolation.strategy", value = "THREAD"),
+                    @HystrixProperty(name = "execution.isolation.semaphore.maxConcurrentRequests",value = "100"),
+                    @HystrixProperty(name = "execution.isolation.strategy", value = "SEMAPHORE"),
                     @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "1000000000")
             },
             threadPoolKey = "queryContentshystrixJackpool", threadPoolProperties = {
-            @HystrixProperty(name = "coreSize", value = "100")
+//            @HystrixProperty(name = "coreSize", value = "100")
     })
     @Override
     public List<ConsultContent> queryContents() {
-        log.info("========queryContents=========");
+        log.info(Thread.currentThread().getName() + "========queryContents=========");
         s.incrementAndGet();
         List<ConsultContent> results = restTemplate.getForObject("http://"
                 + SERVIER_NAME + "/user/queryContent", List.class);
         return results;
     }
 
+    @HystrixCommand(fallbackMethod = "queryContentsAsynFallback")
+    @Override
+    public Future<String> queryContentsAsyn() {
+        return new AsyncResult<String>() {
+            @Override
+            public String invoke() {
+                log.info("========queryContents=========");
+                List<ConsultContent> results = restTemplate.getForObject("http://"
+                        + SERVIER_NAME + "/user/queryContent", List.class);
+                return JSONObject.toJSONString(results);
+            }
+        };
+    }
+
+    public String queryContentsAsynFallback() {
+        log.info("========queryContentsAsynFallback=========");
+        return "queryContentsAsynFallback";
+    }
+
+    @HystrixCommand(threadPoolKey = "queryContentshystrixJackpool")
     //    @Retryable
     @Override
     public List<ConsultContent> queryContent() {
@@ -90,6 +117,7 @@ public class UserServiceImpl implements UserService {
     public List<ConsultContent> queryContentsFallback() {
         f.incrementAndGet();
         log.info("===============queryContentsFallback=================");
+
         return null;
     }
 
@@ -99,5 +127,49 @@ public class UserServiceImpl implements UserService {
         jo.put("成功数", s.get());
         jo.put("失败数", f.get());
         return jo.toJSONString();
+    }
+
+    /*
+     *  ObservableExecutionMode.EAGER  表示使用observe()方式执行，是hot Observeable
+     *  ObservableExecutionMode.LAZY   表示使用toObservable()执行，是cold Observeable
+     */
+    @HystrixCommand(fallbackMethod = "exceptionHandler",
+            observableExecutionMode = ObservableExecutionMode.LAZY,
+            commandProperties = {@HystrixProperty(name = "execution.isolation.strategy", value = "THREAD")},
+            threadPoolKey = "hystrixJackpool", threadPoolProperties = {@HystrixProperty(name = "coreSize", value = "10")})
+    @Override
+    public Observable<String> mergeResult() {
+        log.info("===================" + Thread.currentThread().getName()
+                + "================");
+
+        return Observable.create(new Observable.OnSubscribe<String>() {
+
+            public void call(Subscriber<? super String> observer) {
+                log.info("==================="
+                        + Thread.currentThread().getName() + "================");
+                try {
+                    if (!observer.isUnsubscribed()) {
+                        log.info(Thread.currentThread().getName()
+                                + "===============onNext  invoke=================");
+                        List<ConsultContent> results = restTemplate.getForObject("http://"
+                                + SERVIER_NAME + "/user/queryContent", List.class);
+                        log.info(JSONObject.toJSONString(results));
+                        observer.onNext(JSONObject.toJSONString(results));
+
+                        List<ZgGoods> goods = restTemplate.getForObject("http://"
+                                + SERVIER_NAME + "/goods/queryGoods", List.class);
+                        log.info(JSONObject.toJSONString(goods));
+                        observer.onNext(JSONObject.toJSONString(goods));
+                        observer.onCompleted();
+                    }
+                } catch (Exception e) {
+                    observer.onError(e);
+                }
+            }
+        });
+    }
+
+    public Observable<String> exceptionHandler() {
+        return Observable.just("我错了！！！");
     }
 }
