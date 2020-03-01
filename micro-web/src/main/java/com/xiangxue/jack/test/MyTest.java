@@ -8,6 +8,9 @@ import com.netflix.config.ConfigurationManager;
 import com.netflix.niws.client.http.RestClient;
 import com.xiangxue.jack.MicroWebApplication;
 import com.xiangxue.jack.service.UserService;
+import org.databene.contiperf.PerfTest;
+import org.databene.contiperf.junit.ContiPerfRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -28,12 +31,15 @@ public class MyTest {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    private Integer count = 120;
+    private Integer count = 11;
 
     private CountDownLatch cdl = new CountDownLatch(count);
 
     @Autowired
     UserService userService;
+
+    @Rule
+    public ContiPerfRule contiPerfRule = new ContiPerfRule();
 
     @Test
     public void hystrixTest() {
@@ -51,7 +57,6 @@ public class MyTest {
                     logger.info(Thread.currentThread().getName() + "==>" + userService.queryContents());
                 }
             }).start();
-            //-1
             cdl.countDown();
         }
 
@@ -60,6 +65,12 @@ public class MyTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    @PerfTest(invocations = 11,threads = 11)
+    public void hystrixTest2() {
+        logger.info(Thread.currentThread().getName() + "==>" + userService.queryContents());
     }
 
     /*

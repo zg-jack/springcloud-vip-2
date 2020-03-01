@@ -1,5 +1,6 @@
 package com.xiangxue.jack.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.xiangxue.jack.bean.ConsultContent;
 import com.xiangxue.jack.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -10,8 +11,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import rx.Observable;
+import rx.Observer;
+import rx.Subscription;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 @Slf4j
 @RestController
@@ -32,6 +40,55 @@ public class UserController {
     @RequestMapping("/queryContent")
     public List<ConsultContent> queryContent() {
         return userService.queryContent();
+    }
+
+    @RequestMapping("/queryContentsAsync")
+    public String queryContentsAsync() {
+        Future<String> stringFuture = userService.queryContentsAsyn();
+        try {
+            String cacheResult = stringFuture.get();
+
+            return cacheResult;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @RequestMapping("/mergeResult")
+    public String mergeResult() {
+        Observable<String> observer = userService.mergeResult();
+        final List<String> result = new ArrayList<String>();
+
+        final CountDownLatch c = new CountDownLatch(1);
+
+        Subscription subscribe = observer.subscribe(new Observer<String>() {
+
+            public void onCompleted() {
+                String resultstr = JSONObject.toJSONString(result);
+                log.info(resultstr);
+                log.info("==========onCompleted be invoke===========");
+                c.countDown();
+            }
+
+            public void onError(Throwable e) {
+
+            }
+
+            public void onNext(String t) {
+                result.add(t);
+                log.info("==========onNext be invoke===========" + t);
+            }
+        });
+
+        try {
+            c.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return JSONObject.toJSONString(result);
     }
 
     @RequestMapping("/queryMonitor")

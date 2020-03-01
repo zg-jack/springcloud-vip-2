@@ -33,10 +33,12 @@ public class RibbonLoadBalanceMicroOrderConfig {
     /*
     * 判断服务是否存活
     * */
-//    @Bean
+    @Bean
     public IPing iPing() {
         //这个实现类会去调用服务来判断服务是否存活
-        return new PingUrl();
+        PingUrl pingUrl = new PingUrl();
+        pingUrl.setPingAppendString("/user/queryContent");
+        return pingUrl;
     }
 
     @Bean
