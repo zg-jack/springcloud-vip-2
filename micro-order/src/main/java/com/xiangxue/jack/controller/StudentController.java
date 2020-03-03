@@ -2,9 +2,11 @@ package com.xiangxue.jack.controller;
 
 import com.xiangxue.jack.bean.Student;
 import com.xiangxue.jack.service.feign.StudentService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 public class StudentController implements StudentService {
 
@@ -33,5 +35,17 @@ public class StudentController implements StudentService {
     @Override
     public String errorMessage(@RequestParam("id") Integer id) {
         return studentService.errorMessage(id);
+    }
+
+    @RequestMapping("/feign/student/queryStudentTimeout")
+    @Override
+    public String queryStudentTimeout(@RequestParam("millis") int millis) {
+        log.info("provider--->" + millis);
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return "provider--->" + millis;
     }
 }

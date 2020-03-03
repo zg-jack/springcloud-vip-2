@@ -6,13 +6,12 @@ import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.*;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 /*
 * 这个类最好不要出现在启动类的@ComponentScan扫描范围
 * 如果出现在@ComponentScan扫描访问，那么这个配置类就是每个服务共用的配置了
 * */
-@Configuration
+//@Configuration
 public class RibbonLoadBalanceMicroOrderConfig {
 
 //    @RibbonClientName
@@ -25,8 +24,8 @@ public class RibbonLoadBalanceMicroOrderConfig {
         config.loadProperties(name);
         config.set(CommonClientConfigKey.MaxAutoRetries,2);
         config.set(CommonClientConfigKey.MaxAutoRetriesNextServer,2);
-        config.set(CommonClientConfigKey.ConnectTimeout,2000);
-        config.set(CommonClientConfigKey.ReadTimeout,4000);
+        config.set(CommonClientConfigKey.ConnectTimeout,1000);
+        config.set(CommonClientConfigKey.ReadTimeout,3000);
         config.set(CommonClientConfigKey.OkToRetryOnAllOperations,true);
         return config;
     }

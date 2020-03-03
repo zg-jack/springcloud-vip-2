@@ -7,6 +7,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
+/*
+* fallback = StudentServiceFallback.class
+* 不能获取具体异常
+*
+* */
 @FeignClient(name = "MICRO-ORDER",path = "/feign"
         /*fallback = StudentServiceFallback.class,*/
         ,fallbackFactory = StudentServiceFallbackFactory.class)
@@ -23,4 +28,7 @@ public interface StudentService {
 
     @GetMapping("/student/errorMessage")
     String errorMessage(@RequestParam("id") Integer id);
+
+    @GetMapping("/student/queryStudentTimeout")
+    String queryStudentTimeout(@RequestParam("millis") int millis);
 }

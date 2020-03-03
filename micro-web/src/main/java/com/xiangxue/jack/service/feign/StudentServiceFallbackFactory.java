@@ -41,6 +41,12 @@ public class StudentServiceFallbackFactory implements FallbackFactory<StudentSer
                 log.info("exception=====errorMessage==========" + msg);
                 return msg;
             }
+
+            @Override
+            public String queryStudentTimeout(int millis) {
+                log.info("exception=====queryStudentTimeout==========" + msg);
+                return msg;
+            }
         };
     }
 }

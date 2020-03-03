@@ -45,4 +45,9 @@ public class StudentServiceImpl implements StudentService {
             throw e;
         }
     }
+
+    @Override
+    public String queryStudentTimeout(int millis) {
+        return null;
+    }
 }

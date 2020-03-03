@@ -15,7 +15,10 @@ import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -32,8 +35,33 @@ public class UserController {
     @Autowired
     private LoadBalancerClient loadBalancerClient;
 
+    @RequestMapping("/printInfo")
+    public List<ConsultContent> printInfo(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+
+        if(cookies != null) {
+            for (int i = 0; i < cookies.length; i++) {
+                log.info("cookie name = >" + cookies[i].getName() + "= >" + "cookie value = " + cookies[i].getValue());
+            }
+        }
+
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while(headerNames.hasMoreElements()) {
+            String headername = headerNames.nextElement();
+            log.info("header name = >" + headername + "= >" + "headervalue = " + request.getHeader(headername));
+        }
+
+        return userService.queryContents();
+    }
+
     @RequestMapping("/queryUser")
-    public List<ConsultContent> queryUser() {
+    public List<ConsultContent> queryUser(HttpServletRequest request) {
+        request.getCookies();
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while(headerNames.hasMoreElements()) {
+            String headername = headerNames.nextElement();
+            log.info("header name = >" + headername + "= >" + "headervalue = " + request.getHeader(headername));
+        }
         return userService.queryContents();
     }
 

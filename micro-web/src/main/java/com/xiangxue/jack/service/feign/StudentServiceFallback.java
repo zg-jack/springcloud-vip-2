@@ -28,4 +28,9 @@ public class StudentServiceFallback implements StudentService{
     public String errorMessage(Integer id) {
         return "根据Id获取学生信息失败";
     }
+
+    @Override
+    public String queryStudentTimeout(int millis) {
+        return "queryStudentTimeout信息失败";
+    }
 }

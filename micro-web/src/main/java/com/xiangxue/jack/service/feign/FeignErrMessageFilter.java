@@ -25,7 +25,7 @@ public class FeignErrMessageFilter {
     * 只有这种方式才能获取所有的被feign包装过的异常信息
     *
     * 这里如果创建的Exception是HystrixBadRequestException
-    * 则不会走熔断逻辑，不记住熔断统计
+    * 则不会走熔断逻辑，不记入熔断统计
     * */
     class FeignErrorDecoder implements ErrorDecoder {
 

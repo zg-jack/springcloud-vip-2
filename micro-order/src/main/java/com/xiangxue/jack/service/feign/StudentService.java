@@ -11,4 +11,6 @@ public interface StudentService {
     String queryStudentById(Integer id);
 
     String errorMessage(Integer id);
+
+    String queryStudentTimeout(int millis);
 }

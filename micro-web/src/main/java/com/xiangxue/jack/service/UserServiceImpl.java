@@ -74,7 +74,7 @@ public class UserServiceImpl implements UserService {
                     @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "1000000000")
             },
             threadPoolKey = "queryContentshystrixJackpool", threadPoolProperties = {
-//            @HystrixProperty(name = "coreSize", value = "100")
+            @HystrixProperty(name = "coreSize", value = "100")
     })
     @Override
     public List<ConsultContent> queryContents() {
