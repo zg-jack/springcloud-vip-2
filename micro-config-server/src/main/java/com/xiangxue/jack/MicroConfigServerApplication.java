@@ -5,6 +5,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.config.server.EnableConfigServer;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 
+
+/*
+* 加密：http://localhost:8085/encrypt?data=123456
+* 解密：http://localhost:8085/decrypt
+* */
 @SpringBootApplication(scanBasePackages = {"com.xiangxue.jack"})
 @EnableConfigServer
 // 注册到eureka

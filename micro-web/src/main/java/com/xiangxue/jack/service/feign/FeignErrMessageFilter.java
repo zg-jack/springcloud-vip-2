@@ -28,14 +28,10 @@ public class FeignErrMessageFilter {
     * 则不会走熔断逻辑，不记入熔断统计
     * */
     class FeignErrorDecoder implements ErrorDecoder {
-
         private Logger logger = LoggerFactory.getLogger(FeignErrorDecoder.class);
-
         @Override
         public Exception decode(String s, Response response) {
-
             RuntimeException runtimeException = null;
-
             try {
                 String retMsg = Util.toString(response.body().asReader());
                 logger.info(retMsg);
