@@ -29,6 +29,9 @@ public class UserController {
     @Value("${redis.password}")
     private String redispass;
 
+    @Value("${db.password}")
+    private String dbpass;
+
     @Autowired
     Environment environment;
 
