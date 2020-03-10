@@ -7,6 +7,7 @@ import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 
 
 /*
+post
 * 加密：http://localhost:8085/encrypt?data=123456
 * 解密：http://localhost:8085/decrypt
 * */

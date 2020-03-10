@@ -11,14 +11,12 @@ public class RefreshScope implements Scope {
 
     @Override
     public Object get(String name, ObjectFactory<?> objectFactory) {
-
         if(map.containsKey(name)) {
             return map.get(name);
         }
 
         Object object = objectFactory.getObject();
         map.put(name,object);
-
         return object;
     }
 

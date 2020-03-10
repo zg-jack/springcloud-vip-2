@@ -16,12 +16,24 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.oauth2.OAuth2ClientProperties;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsResourceDetails;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Base64;
+import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -95,5 +107,34 @@ public class MyTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Autowired
+    private OAuth2ClientProperties oAuth2ClientProperties;
+
+    @Autowired
+    private ClientCredentialsResourceDetails clientCredentialsResourceDetails;
+    
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Test
+    public void jwtToken() {
+        String client_secret = oAuth2ClientProperties.getClientId()+":"+oAuth2ClientProperties.getClientSecret();
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        client_secret = "Basic "+Base64.getEncoder().encodeToString(client_secret.getBytes());
+        httpHeaders.set("Authorization",client_secret);
+        //授权请求信息
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.put("username", Collections.singletonList("micro-web"));
+        map.put("password", Collections.singletonList("123456"));
+        map.put("grant_type", Collections.singletonList(clientCredentialsResourceDetails.getGrantType()));
+
+        map.put("scope", clientCredentialsResourceDetails.getScope());
+        //HttpEntity
+        HttpEntity httpEntity = new HttpEntity(map,httpHeaders);
+        //获取 Token
+        ResponseEntity<OAuth2AccessToken> exchange = restTemplate.exchange(clientCredentialsResourceDetails.getAccessTokenUri(), HttpMethod.POST, httpEntity, OAuth2AccessToken.class);
     }
 }
