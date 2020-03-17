@@ -15,7 +15,7 @@ public class MyTest {
 
     @Test
     public void test1() {
-        String a = "{bcrypt}" + new BCryptPasswordEncoder().encode("123456");
+        String a = "{bcrypt}" + new BCryptPasswordEncoder().encode("123");
         System.out.println(a);
     }
 }

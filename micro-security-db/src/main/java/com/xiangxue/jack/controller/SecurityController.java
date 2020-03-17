@@ -14,7 +14,7 @@ public class SecurityController {
 
     @RequestMapping(value = "/check", method = RequestMethod.GET)
     public Principal getUser(Principal principal) {
-        log.info(principal.toString());
+        log.info("security server check================>>>" + principal.toString());
         return principal;
     }
 }

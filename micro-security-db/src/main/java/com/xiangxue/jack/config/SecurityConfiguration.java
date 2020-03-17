@@ -30,6 +30,23 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.requestMatchers().anyRequest()
                 .and()
                 .authorizeRequests()
-                .antMatchers("/oauth/**").permitAll();
+//                .antMatchers("/oauth/**").permitAll();
+                .antMatchers("/").authenticated();
+
+/*        http.csrf().disable().exceptionHandling()
+                .authenticationEntryPoint((request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED))
+                .and()
+                .authorizeRequests().
+                antMatchers("/favicon.ico").permitAll()
+                .antMatchers("/oauth/**").permitAll()
+                .antMatchers("/login/**").permitAll()
+                .anyRequest().authenticated()
+                .and()
+                .formLogin()
+                .loginPage("/login")
+                .and()
+                .httpBasic().disable();*/
+        http.authorizeRequests().antMatchers("/**").fullyAuthenticated().and().httpBasic();  //拦截所有请求 通过httpBasic进行认证
+
     }
 }

@@ -156,8 +156,13 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
-                    <include>**.*</include>
+                    <include>**/*.properties</include>
+                    <include>**/*.xml</include>
+                    <include>**/*.txt</include>
+                    <include>**/*.keystore</include>
+                    <include>**/*.html</include>
                 </includes>
+                <filtering>false</filtering>
             </resource>
         </resources>
     </build>

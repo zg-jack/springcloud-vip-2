@@ -2,6 +2,7 @@ package com.xiangxue.jack.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -9,12 +10,13 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 
-//@Configuration
-//@EnableAuthorizationServer
+@Configuration
+@EnableAuthorizationServer
 public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
 
     @Autowired
@@ -26,20 +28,10 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     @Autowired
     private UserDetailsService userDetailsService;
 
-/*    @Autowired
-    @Qualifier("dataSource")
-    private DataSource dataSource;*/
-
     @Bean
     public TokenStore tokenStore() {
         return new MyRedisTokenStore(connectionFactory);
     }
-
-/*    @Bean("jdbcTokenStore")
-    public JdbcTokenStore getJdbcTokenStore() {
-        return new JdbcTokenStore(dataSource);
-    }*/
-
 
     /*
     * AuthorizationServerEndpointsConfigurer：用来配置授权（authorization）以及令牌（token）的访问端点和令牌服务(token services)。
@@ -74,7 +66,6 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
         String finalSecret = "{bcrypt}" + new BCryptPasswordEncoder().encode("123456");
-
         clients.
 //                jdbc(dataSource).
                 inMemory().
@@ -87,11 +78,11 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 .accessTokenValiditySeconds(1200)
                 .refreshTokenValiditySeconds(50000)
                 .and()
-                .withClient("client_2")
-                .resourceIds("client_2")
+                .withClient("micro-zuul")
+                .resourceIds("micro-zuul")
                 .authorizedGrantTypes("password", "refresh_token")
                 .scopes("server")
-                .authorities("oauth2")
+                .authorities("password")
                 .secret(finalSecret)
                 .accessTokenValiditySeconds(1200)
                 .refreshTokenValiditySeconds(50000);
